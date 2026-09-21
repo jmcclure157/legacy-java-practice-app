@@ -13,8 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -35,10 +33,9 @@ public class TodoControllerTest {
 
     @Test
     public void listReturnsTodos() throws Exception {
-        Todo todo = new Todo("buy milk", null, false);
-        todo.setId(Long.valueOf(1L));
-        List<Todo> todos = new ArrayList<Todo>(Arrays.asList(todo));
-        when(service.findAll()).thenReturn(todos);
+        var todo = new Todo("buy milk", null, false);
+        todo.setId(1L);
+        when(service.findAll()).thenReturn(List.of(todo));
 
         mockMvc.perform(get("/api/todos"))
                 .andExpect(status().isOk())
@@ -48,9 +45,9 @@ public class TodoControllerTest {
 
     @Test
     public void getByIdReturnsTodo() throws Exception {
-        Todo todo = new Todo("walk dog", "after lunch", false);
-        todo.setId(Long.valueOf(5L));
-        when(service.findById(Long.valueOf(5L))).thenReturn(todo);
+        var todo = new Todo("walk dog", "after lunch", false);
+        todo.setId(5L);
+        when(service.findById(5L)).thenReturn(todo);
 
         mockMvc.perform(get("/api/todos/5"))
                 .andExpect(status().isOk())
@@ -60,7 +57,7 @@ public class TodoControllerTest {
 
     @Test
     public void getByIdReturnsNotFound() throws Exception {
-        when(service.findById(Long.valueOf(99L))).thenThrow(new TodoNotFoundException(Long.valueOf(99L)));
+        when(service.findById(99L)).thenThrow(new TodoNotFoundException(99L));
 
         mockMvc.perform(get("/api/todos/99"))
                 .andExpect(status().isNotFound());
@@ -68,8 +65,8 @@ public class TodoControllerTest {
 
     @Test
     public void createReturnsCreated() throws Exception {
-        Todo saved = new Todo("write code", null, false);
-        saved.setId(Long.valueOf(3L));
+        var saved = new Todo("write code", null, false);
+        saved.setId(3L);
         when(service.create(any(Todo.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/todos")
@@ -89,9 +86,9 @@ public class TodoControllerTest {
 
     @Test
     public void updateReturnsUpdatedTodo() throws Exception {
-        Todo updated = new Todo("renamed", null, true);
-        updated.setId(Long.valueOf(4L));
-        when(service.update(eq(Long.valueOf(4L)), any(Todo.class))).thenReturn(updated);
+        var updated = new Todo("renamed", null, true);
+        updated.setId(4L);
+        when(service.update(eq(4L), any(Todo.class))).thenReturn(updated);
 
         mockMvc.perform(put("/api/todos/4")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -105,12 +102,12 @@ public class TodoControllerTest {
         mockMvc.perform(delete("/api/todos/8"))
                 .andExpect(status().isNoContent());
 
-        verify(service).delete(Long.valueOf(8L));
+        verify(service).delete(8L);
     }
 
     @Test
     public void deleteMissingReturnsNotFound() throws Exception {
-        doThrow(new TodoNotFoundException(Long.valueOf(11L))).when(service).delete(Long.valueOf(11L));
+        doThrow(new TodoNotFoundException(11L)).when(service).delete(11L);
 
         mockMvc.perform(delete("/api/todos/11"))
                 .andExpect(status().isNotFound());

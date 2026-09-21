@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +28,7 @@ public class TodoServiceTest {
     public void createTrimsTitleAndNotes() {
         when(repository.save(any(Todo.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Todo saved = service.create(new Todo("  write tests  ", "   ", false));
+        var saved = service.create(new Todo("  write tests  ", "   ", false));
 
         assertEquals("write tests", saved.getTitle());
         assertEquals(null, saved.getNotes());
@@ -39,34 +36,27 @@ public class TodoServiceTest {
 
     @Test
     public void findByIdThrowsWhenMissing() {
-        when(repository.findById(Long.valueOf(42L))).thenReturn(Optional.<Todo>empty());
+        when(repository.findById(42L)).thenReturn(Optional.empty());
 
-        assertThrows(TodoNotFoundException.class, new org.junit.jupiter.api.function.Executable() {
-            @Override
-            public void execute() {
-                service.findById(Long.valueOf(42L));
-            }
-        });
+        assertThrows(TodoNotFoundException.class, () -> service.findById(42L));
     }
 
     @Test
     public void findAllReturnsEmptyListWhenNoRows() {
-        when(repository.findAll()).thenReturn(Collections.<Todo>emptyList());
+        when(repository.findAll()).thenReturn(List.of());
 
-        List<Todo> result = service.findAll();
-
-        assertTrue(result.isEmpty());
+        assertTrue(service.findAll().isEmpty());
     }
 
     @Test
     public void findAllSortsById() {
-        Todo second = new Todo("second", null, false);
-        second.setId(Long.valueOf(2L));
-        Todo first = new Todo("first", null, false);
-        first.setId(Long.valueOf(1L));
-        when(repository.findAll()).thenReturn(new ArrayList<Todo>(Arrays.asList(second, first)));
+        var second = new Todo("second", null, false);
+        second.setId(2L);
+        var first = new Todo("first", null, false);
+        first.setId(1L);
+        when(repository.findAll()).thenReturn(List.of(second, first));
 
-        List<Todo> result = service.findAll();
+        var result = service.findAll();
 
         assertEquals("first", result.get(0).getTitle());
         assertEquals("second", result.get(1).getTitle());
@@ -74,21 +64,19 @@ public class TodoServiceTest {
 
     @Test
     public void countRemainingIgnoresCompleted() {
-        Todo done = new Todo("done", null, true);
-        Todo open = new Todo("open", null, false);
-        when(repository.findAll()).thenReturn(new ArrayList<Todo>(Arrays.asList(done, open)));
+        when(repository.findAll()).thenReturn(List.of(new Todo("done", null, true), new Todo("open", null, false)));
 
         assertEquals(1, service.countRemaining());
     }
 
     @Test
     public void updateReplacesFields() {
-        Todo existing = new Todo("old", "old notes", false);
-        existing.setId(Long.valueOf(7L));
-        when(repository.findById(Long.valueOf(7L))).thenReturn(Optional.of(existing));
+        var existing = new Todo("old", "old notes", false);
+        existing.setId(7L);
+        when(repository.findById(7L)).thenReturn(Optional.of(existing));
         when(repository.save(any(Todo.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Todo updated = service.update(Long.valueOf(7L), new Todo(" new ", " new notes ", true));
+        var updated = service.update(7L, new Todo(" new ", " new notes ", true));
 
         assertEquals("new", updated.getTitle());
         assertEquals("new notes", updated.getNotes());

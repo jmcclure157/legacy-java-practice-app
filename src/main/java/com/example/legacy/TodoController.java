@@ -30,7 +30,7 @@ public class TodoController {
     public List<Todo> list(@RequestParam(name = "completed", required = false) Boolean completed,
                            @RequestParam(name = "q", required = false) String query) {
         if (completed != null) {
-            return service.findByCompleted(completed.booleanValue());
+            return service.findByCompleted(completed);
         }
         if (query != null) {
             return service.search(query);
@@ -44,14 +44,14 @@ public class TodoController {
     }
 
     @GetMapping("/remaining")
-    public Integer remaining() {
-        return Integer.valueOf(service.countRemaining());
+    public int remaining() {
+        return service.countRemaining();
     }
 
     @PostMapping
     public ResponseEntity<Todo> create(@Valid @RequestBody Todo todo) {
-        Todo saved = service.create(todo);
-        return new ResponseEntity<Todo>(saved, HttpStatus.CREATED);
+        var saved = service.create(todo);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
@@ -62,6 +62,6 @@ public class TodoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         service.delete(id);
-        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 }
