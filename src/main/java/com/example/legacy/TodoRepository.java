@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
-    List<Todo> findByCompleted(Boolean completed);
+    List<Todo> findByCompleted(boolean completed);
 
     List<Todo> findByTitleContainingIgnoreCaseOrderByIdAsc(String fragment);
 }

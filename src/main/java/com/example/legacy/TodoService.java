@@ -1,10 +1,7 @@
 package com.example.legacy;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,48 +17,27 @@ public class TodoService {
 
     @Transactional(readOnly = true)
     public List<Todo> findAll() {
-        List<Todo> found = repository.findAll();
-        if (found == null || found.isEmpty()) {
-            return Collections.<Todo>emptyList();
-        }
-        List<Todo> sorted = new ArrayList<Todo>(found);
-        Collections.sort(sorted, new Comparator<Todo>() {
-            @Override
-            public int compare(Todo left, Todo right) {
-                Long leftId = left.getId();
-                Long rightId = right.getId();
-                long leftValue = leftId == null ? Long.MAX_VALUE : leftId.longValue();
-                long rightValue = rightId == null ? Long.MAX_VALUE : rightId.longValue();
-                return Long.valueOf(leftValue).compareTo(Long.valueOf(rightValue));
-            }
-        });
-        return sorted;
+        return repository.findAll().stream()
+                .sorted(Comparator.comparing(Todo::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<Todo> findByCompleted(boolean completed) {
-        List<Todo> found = repository.findByCompleted(Boolean.valueOf(completed));
-        if (found == null) {
-            return Collections.<Todo>emptyList();
-        }
-        return found;
+        return repository.findByCompleted(completed);
     }
 
     @Transactional(readOnly = true)
     public List<Todo> search(String fragment) {
-        if (fragment == null || fragment.trim().length() == 0) {
-            return Collections.<Todo>emptyList();
+        if (fragment == null || fragment.isBlank()) {
+            return List.of();
         }
-        return repository.findByTitleContainingIgnoreCaseOrderByIdAsc(fragment.trim());
+        return repository.findByTitleContainingIgnoreCaseOrderByIdAsc(fragment.strip());
     }
 
     @Transactional(readOnly = true)
     public Todo findById(Long id) {
-        Optional<Todo> maybe = repository.findById(id);
-        if (!maybe.isPresent()) {
-            throw new TodoNotFoundException(id);
-        }
-        return maybe.get();
+        return repository.findById(id).orElseThrow(() -> new TodoNotFoundException(id));
     }
 
     @Transactional
@@ -74,7 +50,7 @@ public class TodoService {
 
     @Transactional
     public Todo update(Long id, Todo incoming) {
-        Todo existing = findById(id);
+        var existing = findById(id);
         existing.setTitle(normalizeTitle(incoming.getTitle()));
         existing.setNotes(trimOrNull(incoming.getNotes()));
         existing.setCompleted(incoming.isCompleted());
@@ -83,39 +59,25 @@ public class TodoService {
 
     @Transactional
     public void delete(Long id) {
-        Todo existing = findById(id);
-        repository.delete(existing);
+        repository.delete(findById(id));
     }
 
     @Transactional(readOnly = true)
     public int countRemaining() {
-        List<Todo> all = repository.findAll();
-        int remaining = 0;
-        for (int i = 0; i < all.size(); i++) {
-            Todo todo = all.get(i);
-            if (!todo.isCompleted()) {
-                Integer boxed = Integer.valueOf(remaining);
-                remaining = boxed.intValue() + 1;
-            }
-        }
-        return remaining;
+        return (int) repository.findAll().stream()
+                .filter(todo -> !todo.isCompleted())
+                .count();
     }
 
     private String normalizeTitle(String title) {
-        if (title == null) {
-            return null;
-        }
-        return title.trim();
+        return title == null ? null : title.strip();
     }
 
     private String trimOrNull(String value) {
         if (value == null) {
             return null;
         }
-        String trimmed = value.trim();
-        if (trimmed.length() == 0) {
-            return null;
-        }
-        return trimmed;
+        var trimmed = value.strip();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

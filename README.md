@@ -34,8 +34,8 @@ Base path `/api/todos`:
 4. **`@MockBean` → `@MockitoBean`** — the annotation moved from Boot into Spring Framework (PR #3)
 5. **Trailing-slash regression** — `GET /api/todos/` 404s under Spring MVC 6; restored with a
    `UrlHandlerFilter` in `WebConfig` and pinned by `TrailingSlashTest` (PR #4)
-6. **Java 21 idiom cleanup** — still pending: `Collections.<Todo>emptyList()`, anonymous
-   `Comparator` classes, index-based `for` loops, manual boxing, no `var`
+6. **Java 21 idiom cleanup** — streams, `var`, `List.of`, `Optional.orElseThrow`, autoboxing removed
+   (PR #5)
 
 ## Build and test
 
