@@ -7,11 +7,11 @@ migration to Java 21 / Spring Boot 3.5 has real work to do.
 ## Stack
 
 - Java 21 (`maven.compiler.release=21`) — step 1 of the modernization
-- Spring Boot 2.7.18 (`spring-boot-starter-parent`)
-- Spring Web, Spring Data JPA, Bean Validation (`javax.validation`)
-- Hibernate 5 with an explicitly configured `H2Dialect`
+- Spring Boot 3.5.5 (`spring-boot-starter-parent`)
+- Spring Web, Spring Data JPA, Bean Validation (`jakarta.validation`)
+- Hibernate 6 with the dialect auto-detected from JDBC metadata
 - H2 in-memory database, `ddl-auto=update`
-- JUnit 5 + Mockito via `spring-boot-starter-test`, `@WebMvcTest` + `@MockBean`
+- JUnit 5 + Mockito via `spring-boot-starter-test`, `@WebMvcTest` + `@MockitoBean`
 
 ## API
 
