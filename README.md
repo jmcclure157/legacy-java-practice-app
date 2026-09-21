@@ -6,7 +6,7 @@ migration to Java 21 / Spring Boot 3.5 has real work to do.
 
 ## Stack
 
-- Java 8 (`maven.compiler.source`/`target` = `1.8`, not `release`)
+- Java 21 (`maven.compiler.release=21`) — step 1 of the modernization
 - Spring Boot 2.7.18 (`spring-boot-starter-parent`)
 - Spring Web, Spring Data JPA, Bean Validation (`javax.validation`)
 - Hibernate 5 with an explicitly configured `H2Dialect`
@@ -38,10 +38,10 @@ Base path `/api/todos`:
 
 ## Build and test
 
-Requires a JDK 8 toolchain:
+Requires a JDK 21 toolchain:
 
 ```bash
-export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 mvn test
 mvn spring-boot:run
 ```
