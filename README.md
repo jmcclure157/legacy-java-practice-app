@@ -1,8 +1,8 @@
 # legacy-java-practice-app
 
-An **intentionally legacy** Java 8 / Spring Boot 2.7 REST API, built as the clean "before" state for a
-modernization practice exercise. Nothing here should be fixed in place — the point is that a later
-migration to Java 21 / Spring Boot 3.5 has real work to do.
+A small todo REST API that started life as an **intentionally legacy** Java 8 / Spring Boot 2.7 app
+and is being modernized to Java 21 / Spring Boot 3.5 one reviewable step at a time. Each PR isolates
+a single failure mode of the migration and explains it; `git log` is the lesson plan.
 
 ## Stack
 
@@ -26,15 +26,16 @@ Base path `/api/todos`:
 | PUT    | `/api/todos/{id}`         | Replace title/notes/completed                    |
 | DELETE | `/api/todos/{id}`         | Delete a todo (404 when missing)                 |
 
-## Deliberately outdated bits
+## Migration steps
 
-- `javax.persistence.*` and `javax.validation.*` imports (pre-`jakarta` rename)
-- `@MockBean` in tests (deprecated in favor of `@MockitoBean`)
-- Explicit `spring.jpa.database-platform=org.hibernate.dialect.H2Dialect`, which Hibernate 6 infers
-- Java 8 idioms: `Collections.<Todo>emptyList()`, anonymous `Comparator`/`Executable` classes,
-  index-based `for` loops, manual boxing (`Long.valueOf`, `Integer.valueOf`), no `var`
-- No test covering `GET /api/todos/` (trailing slash), so the Spring MVC 6 trailing-slash change is
-  free to surface during migration
+1. **JDK 8 → 21** — toolchain only, `maven.compiler.release` replaces `source`/`target` (PR #1)
+2. **Spring Boot 2.7 → 3.5** — breaks the build with `package javax.persistence does not exist` (PR #2)
+3. **javax → jakarta** — plus removal of the explicit `H2Dialect`, which Hibernate 6 infers (PR #2)
+4. **`@MockBean` → `@MockitoBean`** — the annotation moved from Boot into Spring Framework (PR #3)
+5. **Trailing-slash regression** — `GET /api/todos/` 404s under Spring MVC 6; restored with a
+   `UrlHandlerFilter` in `WebConfig` and pinned by `TrailingSlashTest` (PR #4)
+6. **Java 21 idiom cleanup** — still pending: `Collections.<Todo>emptyList()`, anonymous
+   `Comparator` classes, index-based `for` loops, manual boxing, no `var`
 
 ## Build and test
 
